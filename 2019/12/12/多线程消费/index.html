@@ -68,6 +68,7 @@
 
 
 
+  <meta name="keywords" content="Kafka," />
 
 
 
@@ -77,12 +78,22 @@
 
 
 
-<meta property="og:type" content="website">
-<meta property="og:title" content="Hexo">
-<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;index.html">
+
+<meta name="description" content="多线程消费KafkaConsumer是非线程安全的。它和KafkaProducer不同，后者是线程安全的，因此用户可以在多个线程中放心地使用同一个KafkaProducer实例，这也是社区推荐的producer使用方法，因为通常它比每个线程维护一个KafkaProducer实例效率要高。但是对于consumer，用户无法直接在多个线程中共享一个KafkaConsumer实例。那么应该如何实现多线程">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kafka多线程消费">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;12&#x2F;12&#x2F;%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%B6%88%E8%B4%B9&#x2F;index.html">
 <meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="多线程消费KafkaConsumer是非线程安全的。它和KafkaProducer不同，后者是线程安全的，因此用户可以在多个线程中放心地使用同一个KafkaProducer实例，这也是社区推荐的producer使用方法，因为通常它比每个线程维护一个KafkaProducer实例效率要高。但是对于consumer，用户无法直接在多个线程中共享一个KafkaConsumer实例。那么应该如何实现多线程">
+<meta property="og:image" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;12&#x2F;12&#x2F;%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%B6%88%E8%B4%B9&#x2F;media&#x2F;15668816337284&#x2F;%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202019-08-27%20%E4%B8%8B%E5%8D%8812.57.26.png">
+<meta property="og:image" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;12&#x2F;12&#x2F;%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%B6%88%E8%B4%B9&#x2F;media&#x2F;15668816337284&#x2F;%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202019-08-27%20%E4%B8%8B%E5%8D%882.29.49.png">
+<meta property="og:image" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;12&#x2F;12&#x2F;%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%B6%88%E8%B4%B9&#x2F;media&#x2F;15668816337284&#x2F;%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202019-08-27%20%E4%B8%8B%E5%8D%884.21.47.png">
+<meta property="article:published_time" content="2019-12-12T03:47:35.000Z">
+<meta property="article:modified_time" content="2019-12-12T03:48:20.465Z">
 <meta property="article:author" content="John Doe">
+<meta property="article:tag" content="Kafka">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;12&#x2F;12&#x2F;%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%B6%88%E8%B4%B9&#x2F;media&#x2F;15668816337284&#x2F;%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202019-08-27%20%E4%B8%8B%E5%8D%8812.57.26.png">
 
 
 
@@ -112,13 +123,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/"/>
+  <link rel="canonical" href="http://yoursite.com/2019/12/12/多线程消费/"/>
 
 
 
 
 
-  <title>Hexo</title>
+  <title>Kafka多线程消费 | Hexo</title>
   
 
 
@@ -137,8 +148,7 @@
     
   
 
-  <div class="container sidebar-position-left 
-  page-home">
+  <div class="container sidebar-position-left page-post-detail">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -241,9 +251,9 @@
         <div class="content-wrap">
           <div id="content" class="content">
             
-  <section id="posts" class="posts-expand">
+
+  <div id="posts" class="posts-expand">
     
-      
 
   
 
@@ -273,9 +283,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/12/12/%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%B6%88%E8%B4%B9/" itemprop="url">Kafka多线程消费</a></h1>
+          <h1 class="post-title" itemprop="name headline">Kafka多线程消费</h1>
         
 
         <div class="post-meta">
@@ -347,9 +355,7 @@
       
 
       
-        
-          
-            <h1 id="多线程消费"><a href="#多线程消费" class="headerlink" title="多线程消费"></a>多线程消费</h1><p>KafkaConsumer是非线程安全的。它和KafkaProducer不同，后者是线程安全的，因此用户可以在多个线程中放心地使用同一个KafkaProducer实例，这也是社区推荐的producer使用方法，因为通常它比每个线程维护一个KafkaProducer实例效率要高。但是对于consumer，用户无法直接在多个线程中共享一个KafkaConsumer实例。那么应该如何实现多线程 consumer 消费呢？</p>
+        <h1 id="多线程消费"><a href="#多线程消费" class="headerlink" title="多线程消费"></a>多线程消费</h1><p>KafkaConsumer是非线程安全的。它和KafkaProducer不同，后者是线程安全的，因此用户可以在多个线程中放心地使用同一个KafkaProducer实例，这也是社区推荐的producer使用方法，因为通常它比每个线程维护一个KafkaProducer实例效率要高。但是对于consumer，用户无法直接在多个线程中共享一个KafkaConsumer实例。那么应该如何实现多线程 consumer 消费呢？</p>
 <h2 id="1、每个线程维护一个-KafkaConsumer"><a href="#1、每个线程维护一个-KafkaConsumer" class="headerlink" title="1、每个线程维护一个 KafkaConsumer"></a>1、每个线程维护一个 KafkaConsumer</h2><p>在这个方法中，用户创建多个线程来消费topic数据。每个线程都会创建专属于该线程的KafkaConsumer实例，如图所示。<br><img src="media/15668816337284/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202019-08-27%20%E4%B8%8B%E5%8D%8812.57.26.png" alt="屏幕快照 2019-08-27 下午12.57.26"><br>上图中，consumer group由多个线程的KafkaConsumer组成，每个线程负责消费固定数目的分区。下面给出一个完整的样例，该样例中包含3个类。</p>
 <pre><code>（1）ConsumerRunnable类：消费线程类，执行真正的消费任务。
 （2）ConsumerGroup类：消费线程管理类，创建多个线程类执行消费任务。
@@ -364,8 +370,6 @@
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">public class Main &#123;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        String brokerList &#x3D; &quot;localhost:9092&quot;;</span><br><span class="line">        String groupId &#x3D; &quot;testGroup1&quot;;</span><br><span class="line">        String topic &#x3D; &quot;test-topic&quot;;</span><br><span class="line">        final ConsumerThreadHandler&lt;byte[], byte[]&gt; handler &#x3D; new ConsumerThreadHandler&lt;&gt;(brokerList,groupId,topic);</span><br><span class="line">        final int cpuCount &#x3D; Runtime.getRuntime().availableProcessors();</span><br><span class="line"></span><br><span class="line">        Runnable runnable &#x3D; new Runnable()&#123;</span><br><span class="line">            @Override</span><br><span class="line">            public void run() &#123;</span><br><span class="line">                handler.consumer(cpuCount);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line">        new Thread(runnable).start();</span><br><span class="line"></span><br><span class="line">        try&#123;</span><br><span class="line">            &#x2F;** 20秒后自动停止该测试程序 **&#x2F;</span><br><span class="line">            Thread.sleep(20000L);</span><br><span class="line">        &#125;catch(InterruptedException e)&#123;</span><br><span class="line">            &#x2F;** 处理异常 **&#x2F;</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.println(&quot;starting to close the consumer.....&quot;);</span><br><span class="line">        handler.close();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>两种方式的对比:<br><img src="media/15668816337284/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202019-08-27%20%E4%B8%8B%E5%8D%884.21.47.png" alt="屏幕快照 2019-08-27 下午4.21.47"></p>
 
-          
-        
       
     </div>
     
@@ -380,146 +384,36 @@
 
     <footer class="post-footer">
       
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/11/hello-world/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="John Doe">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Hexo">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/12/11/hello-world/" itemprop="url">Hello World</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-12-11T18:49:37+08:00">
-                2019-12-11
-              </time>
-            
-
-            
-
-            
-          </span>
-
+        <div class="post-tags">
           
-
+            <a href="/tags/Kafka/" rel="tag"># Kafka</a>
           
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
         </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html" target="_blank" rel="noopener">Deployment</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
       
 
       
       
-        <div class="post-eof"></div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/12/11/hello-world/" rel="next" title="Hello World">
+                <i class="fa fa-chevron-left"></i> Hello World
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
       
     </footer>
   </div>
@@ -529,10 +423,11 @@
   </article>
 
 
-    
-  </section>
 
-  
+    <div class="post-spread">
+      
+    </div>
+  </div>
 
 
           </div>
@@ -540,6 +435,10 @@
 
 
           
+
+  
+
+
 
         </div>
         
@@ -560,8 +459,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -625,6 +533,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#多线程消费"><span class="nav-number">1.</span> <span class="nav-text">多线程消费</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1、每个线程维护一个-KafkaConsumer"><span class="nav-number">1.1.</span> <span class="nav-text">1、每个线程维护一个 KafkaConsumer</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2、单KafkaConsumer实例＋多worker线程"><span class="nav-number">1.2.</span> <span class="nav-text">2、单KafkaConsumer实例＋多worker线程</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
@@ -765,6 +689,10 @@
 
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
 
   
 
