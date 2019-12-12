@@ -5,7 +5,7 @@
   
 
 
-<html class="theme-next pisces use-motion" lang="en">
+<html class="theme-next muse use-motion" lang="en">
 <head>
   <meta charset="UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -68,6 +68,8 @@
 
 
 
+  <meta name="keywords" content="Hexo, NexT" />
+
 
 
 
@@ -90,7 +92,7 @@
   var NexT = window.NexT || {};
   var CONFIG = {
     root: '/',
-    scheme: 'Pisces',
+    scheme: 'Muse',
     version: '5.1.4',
     sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
     fancybox: true,
@@ -175,21 +177,11 @@
       
         
         <li class="menu-item menu-item-home">
-          <a href="/home" rel="section">
+          <a href="/%E9%A6%96%E9%A1%B5" rel="section">
             
               <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
             
             Home
-          </a>
-        </li>
-      
-        
-        <li class="menu-item menu-item-about">
-          <a href="/about" rel="section">
-            
-              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
-            
-            About
           </a>
         </li>
       
@@ -242,161 +234,6 @@
           <div id="content" class="content">
             
   <section id="posts" class="posts-expand">
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/12/%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%B6%88%E8%B4%B9/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="John Doe">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Hexo">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/12/12/%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%B6%88%E8%B4%B9/" itemprop="url">Kafka多线程消费</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-12-12T11:47:35+08:00">
-                2019-12-12
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">In</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%8A%80%E6%9C%AF%E5%8D%9A%E5%AE%A2/" itemprop="url" rel="index">
-                    <span itemprop="name">技术博客</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="多线程消费"><a href="#多线程消费" class="headerlink" title="多线程消费"></a>多线程消费</h1><p>KafkaConsumer是非线程安全的。它和KafkaProducer不同，后者是线程安全的，因此用户可以在多个线程中放心地使用同一个KafkaProducer实例，这也是社区推荐的producer使用方法，因为通常它比每个线程维护一个KafkaProducer实例效率要高。但是对于consumer，用户无法直接在多个线程中共享一个KafkaConsumer实例。那么应该如何实现多线程 consumer 消费呢？</p>
-<h2 id="1、每个线程维护一个-KafkaConsumer"><a href="#1、每个线程维护一个-KafkaConsumer" class="headerlink" title="1、每个线程维护一个 KafkaConsumer"></a>1、每个线程维护一个 KafkaConsumer</h2><p>在这个方法中，用户创建多个线程来消费topic数据。每个线程都会创建专属于该线程的KafkaConsumer实例，如图所示。<br><img src="media/15668816337284/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202019-08-27%20%E4%B8%8B%E5%8D%8812.57.26.png" alt="屏幕快照 2019-08-27 下午12.57.26"><br>上图中，consumer group由多个线程的KafkaConsumer组成，每个线程负责消费固定数目的分区。下面给出一个完整的样例，该样例中包含3个类。</p>
-<pre><code>（1）ConsumerRunnable类：消费线程类，执行真正的消费任务。
-（2）ConsumerGroup类：消费线程管理类，创建多个线程类执行消费任务。
-（3）ConsumerMain 类：测试主方法类。</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">public class ConsumerRunnable implements Runnable&#123;</span><br><span class="line">    </span><br><span class="line">    &#x2F;** 每个线程维护私有的KafkaConsumer实例 **&#x2F;</span><br><span class="line">    private final KafkaConsumer&lt;String,String&gt; consumer;</span><br><span class="line"></span><br><span class="line">    public ConsumerRunnable(String brokerList,String groupId, String topic)&#123;</span><br><span class="line">        Properties props &#x3D; new Properties();</span><br><span class="line">        props.put(&quot;bootstrap.servers&quot;,brokerList);</span><br><span class="line">        props.put(&quot;group.id&quot;,groupId);</span><br><span class="line">        props.put(&quot;enable.auto.commit&quot;,&quot;true&quot;);</span><br><span class="line">        props.put(&quot;auto.commit.interval.ms&quot;,&quot;1000&quot;);</span><br><span class="line">        props.put(&quot;session.timeout.ms &quot;,&quot;30000&quot;);</span><br><span class="line">        props.put(&quot;key.deserializer&quot;,&quot;org.apache.kafka.commom.serialization.StringDeserializer&quot;);</span><br><span class="line">        props.put(&quot;value.deserializer&quot;,&quot;org.apache.kafka.commom.serialization.StringDeserializer&quot;);</span><br><span class="line">        this.consumer &#x3D; new KafkaConsumer&lt;String, String&gt;(props);</span><br><span class="line">        consumer.subscribe(Arrays.asList(topic));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void run() &#123;</span><br><span class="line">        while(true)&#123;</span><br><span class="line">            &#x2F;** 使用200毫秒作为超时时间 **&#x2F;</span><br><span class="line">            ConsumerRecords&lt;String,String&gt; records &#x3D; consumer.poll(200);</span><br><span class="line">            for(ConsumerRecord&lt;String,String&gt; record : records)&#123;</span><br><span class="line">                System.out.println(Thread.currentThread().getName() + &quot;consumed&quot; + record.partition()+ &quot;the message with offset:&quot; + record.offset());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">public class ConsumerGroup &#123;</span><br><span class="line">    private List&lt;ConsumerRunnable&gt; consumers;</span><br><span class="line"></span><br><span class="line">    public ConsumerGroup(int consumerNum,String groupId, String topic, String brokerList)&#123;</span><br><span class="line">        consumers &#x3D; new ArrayList&lt;&gt;(consumerNum);</span><br><span class="line">        for (int i &#x3D; 0; i &lt; consumerNum; ++i) &#123;</span><br><span class="line">            ConsumerRunnable consumerThread &#x3D; new ConsumerRunnable(brokerList, groupId, topic);</span><br><span class="line">            consumers.add(consumerThread);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public void execute() &#123;</span><br><span class="line">        for (ConsumerRunnable task : consumers) &#123;</span><br><span class="line">            new Thread(task).start();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">public class ConsumerMain &#123;</span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        String brokerList &#x3D; &quot;localhost:9092&quot;;</span><br><span class="line">        String groupId &#x3D; &quot;testGroup1&quot;;</span><br><span class="line">        String topic &#x3D; &quot;test-topic&quot;;</span><br><span class="line">        int consumerNum &#x3D; 3;</span><br><span class="line">        ConsumerGroup consumerGroup &#x3D; new ConsumerGroup(consumerNum, groupId, topic, brokerList);</span><br><span class="line">        consumerGroup.execute();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="2、单KafkaConsumer实例＋多worker线程"><a href="#2、单KafkaConsumer实例＋多worker线程" class="headerlink" title="2、单KafkaConsumer实例＋多worker线程"></a>2、单KafkaConsumer实例＋多worker线程</h2><p>此方法与第一种方法的区别在于，我们将消息的获取与消息的处理解藕，把后者放入单独的工作者线程中，即所谓的worker线程中。同时在全局维护一个或若干个consumer实例执行消息获取任务，如图所示。<br><img src="media/15668816337284/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202019-08-27%20%E4%B8%8B%E5%8D%882.29.49.png" alt="屏幕快照 2019-08-27 下午2.29.49"><br>本例使用全局的KafkaConsumer实例执行消息获取，然后把获取到的消息集合交给钱程池中的worker线程执行工作。之后worker线程完成处理后上报位移状态，由全局consumer提交位移。代码中共有如下3个类。</p>
-<pre><code>（1）ConsumerThreadHandler类:consumer多线程管理类，用于创建线程池以及为每个线程分配消息集合。另外consumer位移提交也在该类中完成。
-（2）ConsumerWorker类:本质上是一个Runnable，执行真正的消费逻辑井上报位移信息给ConsumerThreadHandler。
-（3）Main类:测试主方法类。</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><span class="line">public class ConsumerThreadHandler&lt;K, V&gt; &#123;</span><br><span class="line"></span><br><span class="line">    private final KafkaConsumer&lt;K, V&gt; consumer;</span><br><span class="line">    private ExecutorService executors;</span><br><span class="line">    private final Map&lt;TopicPartition, OffsetAndMetadata&gt; offsets &#x3D; new HashMap&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    public ConsumerThreadHandler(String brokerList, String groupId, String topic)&#123;</span><br><span class="line">        Properties props &#x3D; new Properties();</span><br><span class="line">        props.put(&quot;bootstrap.servers&quot;,brokerList);</span><br><span class="line">        props.put(&quot;group.id&quot;,groupId);</span><br><span class="line">        props.put(&quot;enable.auto.commit&quot;,&quot;false&quot;);</span><br><span class="line">        props.put(&quot;auto.offset.reset&quot;,&quot;earliest&quot;);</span><br><span class="line">        props.put(&quot;key.deserializer&quot;,&quot;org.apache.kafka.commom.serialization.StringDeserializer&quot;);</span><br><span class="line">        props.put(&quot;value.deserializer&quot;,&quot;org.apache.kafka.commom.serialization.StringDeserializer&quot;);</span><br><span class="line">        consumer &#x3D; new KafkaConsumer&lt;K, V&gt;(props);</span><br><span class="line">        consumer.subscribe(Arrays.asList(topic), new ConsumerRebalanceListener() &#123;</span><br><span class="line">            @Override</span><br><span class="line">            public void onPartitionsRevoked(Collection&lt;TopicPartition&gt; partitions) &#123;</span><br><span class="line">                &#x2F;** 提交位移 **&#x2F;</span><br><span class="line">                consumer.commitSync(offsets);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            @Override</span><br><span class="line">            public void onPartitionsAssigned(Collection&lt;TopicPartition&gt; partitions) &#123;</span><br><span class="line">                offsets.clear();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    &#x2F;** 消费主方法 **&#x2F;</span><br><span class="line">    public void consumer(int threadNumber)&#123;</span><br><span class="line">        executors &#x3D; new ThreadPoolExecutor(threadNumber,threadNumber,</span><br><span class="line">                0L, TimeUnit.MILLISECONDS,</span><br><span class="line">                new ArrayBlockingQueue&lt;&gt;(1000),</span><br><span class="line">                new ThreadPoolExecutor.CallerRunsPolicy());</span><br><span class="line">        try&#123;</span><br><span class="line">            while(true)&#123;</span><br><span class="line">                ConsumerRecords&lt;K,V&gt; records &#x3D; consumer.poll(1000L);</span><br><span class="line">                if(!records.isEmpty())&#123;</span><br><span class="line">                    executors.submit(new ConsumerWorker&lt;&gt;(records,offsets));</span><br><span class="line">                &#125;</span><br><span class="line">                commitOffsets();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;catch(WakeupException e)&#123;</span><br><span class="line">            &#x2F;** 异常处理 **&#x2F;</span><br><span class="line">        &#125;finally&#123;</span><br><span class="line">            commitOffsets();</span><br><span class="line">            consumer.close();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    private void commitOffsets()&#123;</span><br><span class="line">        &#x2F;** 尽量降低synchronized块对offsets锁定的时间 **&#x2F;</span><br><span class="line">        Map&lt;TopicPartition, OffsetAndMetadata&gt; unmodifedMap;</span><br><span class="line">        synchronized (offsets)&#123;</span><br><span class="line">            if(offsets.isEmpty())&#123;</span><br><span class="line">                return;</span><br><span class="line">            &#125;</span><br><span class="line">            unmodifedMap &#x3D; Collections.unmodifiableMap(new HashMap&lt;&gt;(offsets));</span><br><span class="line">            offsets.clear();</span><br><span class="line">        &#125;</span><br><span class="line">        consumer.commitSync(unmodifedMap);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public void close()&#123;</span><br><span class="line">        consumer.wakeup();</span><br><span class="line">        executors.shutdown();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">public class ConsumerWorker&lt;K,V&gt; implements Runnable &#123;</span><br><span class="line"></span><br><span class="line">    private final ConsumerRecords&lt;K,V&gt; records;</span><br><span class="line">    private final Map&lt;TopicPartition, OffsetAndMetadata&gt; offsets;</span><br><span class="line"></span><br><span class="line">    public ConsumerWorker(ConsumerRecords&lt;K, V&gt; record, Map&lt;TopicPartition, OffsetAndMetadata&gt; offsets)&#123;</span><br><span class="line">        this.records &#x3D; record;</span><br><span class="line">        this.offsets &#x3D; offsets;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void run() &#123;</span><br><span class="line">        for(TopicPartition partition : records.partitions())&#123;</span><br><span class="line">            List&lt;ConsumerRecord&lt;K,V&gt;&gt; partitionRecords &#x3D; records.records(partition);</span><br><span class="line">            for(ConsumerRecord&lt;K,V&gt; record : partitionRecords)&#123;</span><br><span class="line">                &#x2F;** 消息处理逻辑 **&#x2F;</span><br><span class="line">                System.out.println(String.format(&quot;topic&#x3D;%s,partition&#x3D;%d,offset&#x3D;%d&quot;,record.topic(), record.partition(),record.offset()));</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            &#x2F;** 上报位移信息 **&#x2F;</span><br><span class="line">            long lastOffset &#x3D; partitionRecords.get(partitionRecords.size()-1).offset();</span><br><span class="line">            synchronized (offsets)&#123;</span><br><span class="line">                if(offsets.containsKey(partition))&#123;</span><br><span class="line">                    offsets.put(partition,new OffsetAndMetadata(lastOffset+1));</span><br><span class="line">                &#125;else&#123;</span><br><span class="line">                    long curr &#x3D; offsets.get(partition).offset();</span><br><span class="line">                    if(curr &lt;&#x3D; lastOffset + 1)&#123;</span><br><span class="line">                        offsets.put(partition, new OffsetAndMetadata(lastOffset+1));</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">public class Main &#123;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        String brokerList &#x3D; &quot;localhost:9092&quot;;</span><br><span class="line">        String groupId &#x3D; &quot;testGroup1&quot;;</span><br><span class="line">        String topic &#x3D; &quot;test-topic&quot;;</span><br><span class="line">        final ConsumerThreadHandler&lt;byte[], byte[]&gt; handler &#x3D; new ConsumerThreadHandler&lt;&gt;(brokerList,groupId,topic);</span><br><span class="line">        final int cpuCount &#x3D; Runtime.getRuntime().availableProcessors();</span><br><span class="line"></span><br><span class="line">        Runnable runnable &#x3D; new Runnable()&#123;</span><br><span class="line">            @Override</span><br><span class="line">            public void run() &#123;</span><br><span class="line">                handler.consumer(cpuCount);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line">        new Thread(runnable).start();</span><br><span class="line"></span><br><span class="line">        try&#123;</span><br><span class="line">            &#x2F;** 20秒后自动停止该测试程序 **&#x2F;</span><br><span class="line">            Thread.sleep(20000L);</span><br><span class="line">        &#125;catch(InterruptedException e)&#123;</span><br><span class="line">            &#x2F;** 处理异常 **&#x2F;</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.println(&quot;starting to close the consumer.....&quot;);</span><br><span class="line">        handler.close();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>两种方式的对比:<br><img src="media/15668816337284/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202019-08-27%20%E4%B8%8B%E5%8D%884.21.47.png" alt="屏幕快照 2019-08-27 下午4.21.47"></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
     
       
 
@@ -530,6 +367,172 @@
 
 
     
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/03/16/%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%B6%88%E8%B4%B9/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="John Doe">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2016/03/16/%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%B6%88%E8%B4%B9/" itemprop="url">Kafka多线程消费</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2016-03-16T08:12:43+08:00">
+                2016-03-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E4%B8%AD%E9%97%B4%E4%BB%B6/" itemprop="url" rel="index">
+                    <span itemprop="name">中间件</span>
+                  </a>
+                </span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E4%B8%AD%E9%97%B4%E4%BB%B6/Kafka/" itemprop="url" rel="index">
+                    <span itemprop="name">Kafka</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="多线程消费"><a href="#多线程消费" class="headerlink" title="多线程消费"></a>多线程消费</h1><p>KafkaConsumer是非线程安全的。它和KafkaProducer不同，后者是线程安全的，因此用户可以在多个线程中放心地使用同一个KafkaProducer实例，这也是社区推荐的producer使用方法，因为通常它比每个线程维护一个KafkaProducer实例效率要高。但是对于consumer，用户无法直接在多个线程中共享一个KafkaConsumer实例。那么应该如何实现多线程 consumer 消费呢？</p>
+<h2 id="1、每个线程维护一个-KafkaConsumer"><a href="#1、每个线程维护一个-KafkaConsumer" class="headerlink" title="1、每个线程维护一个 KafkaConsumer"></a>1、每个线程维护一个 KafkaConsumer</h2><p>在这个方法中，用户创建多个线程来消费topic数据。每个线程都会创建专属于该线程的KafkaConsumer实例，如图所示。<br><img src="media/15668816337284/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202019-08-27%20%E4%B8%8B%E5%8D%8812.57.26.png" alt="屏幕快照 2019-08-27 下午12.57.26"><br>上图中，consumer group由多个线程的KafkaConsumer组成，每个线程负责消费固定数目的分区。下面给出一个完整的样例，该样例中包含3个类。</p>
+<pre><code>（1）ConsumerRunnable类：消费线程类，执行真正的消费任务。
+（2）ConsumerGroup类：消费线程管理类，创建多个线程类执行消费任务。
+（3）ConsumerMain 类：测试主方法类。</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">public class ConsumerRunnable implements Runnable&#123;</span><br><span class="line">    </span><br><span class="line">    &#x2F;** 每个线程维护私有的KafkaConsumer实例 **&#x2F;</span><br><span class="line">    private final KafkaConsumer&lt;String,String&gt; consumer;</span><br><span class="line"></span><br><span class="line">    public ConsumerRunnable(String brokerList,String groupId, String topic)&#123;</span><br><span class="line">        Properties props &#x3D; new Properties();</span><br><span class="line">        props.put(&quot;bootstrap.servers&quot;,brokerList);</span><br><span class="line">        props.put(&quot;group.id&quot;,groupId);</span><br><span class="line">        props.put(&quot;enable.auto.commit&quot;,&quot;true&quot;);</span><br><span class="line">        props.put(&quot;auto.commit.interval.ms&quot;,&quot;1000&quot;);</span><br><span class="line">        props.put(&quot;session.timeout.ms &quot;,&quot;30000&quot;);</span><br><span class="line">        props.put(&quot;key.deserializer&quot;,&quot;org.apache.kafka.commom.serialization.StringDeserializer&quot;);</span><br><span class="line">        props.put(&quot;value.deserializer&quot;,&quot;org.apache.kafka.commom.serialization.StringDeserializer&quot;);</span><br><span class="line">        this.consumer &#x3D; new KafkaConsumer&lt;String, String&gt;(props);</span><br><span class="line">        consumer.subscribe(Arrays.asList(topic));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void run() &#123;</span><br><span class="line">        while(true)&#123;</span><br><span class="line">            &#x2F;** 使用200毫秒作为超时时间 **&#x2F;</span><br><span class="line">            ConsumerRecords&lt;String,String&gt; records &#x3D; consumer.poll(200);</span><br><span class="line">            for(ConsumerRecord&lt;String,String&gt; record : records)&#123;</span><br><span class="line">                System.out.println(Thread.currentThread().getName() + &quot;consumed&quot; + record.partition()+ &quot;the message with offset:&quot; + record.offset());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">public class ConsumerGroup &#123;</span><br><span class="line">    private List&lt;ConsumerRunnable&gt; consumers;</span><br><span class="line"></span><br><span class="line">    public ConsumerGroup(int consumerNum,String groupId, String topic, String brokerList)&#123;</span><br><span class="line">        consumers &#x3D; new ArrayList&lt;&gt;(consumerNum);</span><br><span class="line">        for (int i &#x3D; 0; i &lt; consumerNum; ++i) &#123;</span><br><span class="line">            ConsumerRunnable consumerThread &#x3D; new ConsumerRunnable(brokerList, groupId, topic);</span><br><span class="line">            consumers.add(consumerThread);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public void execute() &#123;</span><br><span class="line">        for (ConsumerRunnable task : consumers) &#123;</span><br><span class="line">            new Thread(task).start();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">public class ConsumerMain &#123;</span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        String brokerList &#x3D; &quot;localhost:9092&quot;;</span><br><span class="line">        String groupId &#x3D; &quot;testGroup1&quot;;</span><br><span class="line">        String topic &#x3D; &quot;test-topic&quot;;</span><br><span class="line">        int consumerNum &#x3D; 3;</span><br><span class="line">        ConsumerGroup consumerGroup &#x3D; new ConsumerGroup(consumerNum, groupId, topic, brokerList);</span><br><span class="line">        consumerGroup.execute();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="2、单KafkaConsumer实例＋多worker线程"><a href="#2、单KafkaConsumer实例＋多worker线程" class="headerlink" title="2、单KafkaConsumer实例＋多worker线程"></a>2、单KafkaConsumer实例＋多worker线程</h2><p>此方法与第一种方法的区别在于，我们将消息的获取与消息的处理解藕，把后者放入单独的工作者线程中，即所谓的worker线程中。同时在全局维护一个或若干个consumer实例执行消息获取任务，如图所示。<br><img src="media/15668816337284/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202019-08-27%20%E4%B8%8B%E5%8D%882.29.49.png" alt="屏幕快照 2019-08-27 下午2.29.49"><br>本例使用全局的KafkaConsumer实例执行消息获取，然后把获取到的消息集合交给钱程池中的worker线程执行工作。之后worker线程完成处理后上报位移状态，由全局consumer提交位移。代码中共有如下3个类。</p>
+<pre><code>（1）ConsumerThreadHandler类:consumer多线程管理类，用于创建线程池以及为每个线程分配消息集合。另外consumer位移提交也在该类中完成。
+（2）ConsumerWorker类:本质上是一个Runnable，执行真正的消费逻辑井上报位移信息给ConsumerThreadHandler。
+（3）Main类:测试主方法类。</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><span class="line">public class ConsumerThreadHandler&lt;K, V&gt; &#123;</span><br><span class="line"></span><br><span class="line">    private final KafkaConsumer&lt;K, V&gt; consumer;</span><br><span class="line">    private ExecutorService executors;</span><br><span class="line">    private final Map&lt;TopicPartition, OffsetAndMetadata&gt; offsets &#x3D; new HashMap&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    public ConsumerThreadHandler(String brokerList, String groupId, String topic)&#123;</span><br><span class="line">        Properties props &#x3D; new Properties();</span><br><span class="line">        props.put(&quot;bootstrap.servers&quot;,brokerList);</span><br><span class="line">        props.put(&quot;group.id&quot;,groupId);</span><br><span class="line">        props.put(&quot;enable.auto.commit&quot;,&quot;false&quot;);</span><br><span class="line">        props.put(&quot;auto.offset.reset&quot;,&quot;earliest&quot;);</span><br><span class="line">        props.put(&quot;key.deserializer&quot;,&quot;org.apache.kafka.commom.serialization.StringDeserializer&quot;);</span><br><span class="line">        props.put(&quot;value.deserializer&quot;,&quot;org.apache.kafka.commom.serialization.StringDeserializer&quot;);</span><br><span class="line">        consumer &#x3D; new KafkaConsumer&lt;K, V&gt;(props);</span><br><span class="line">        consumer.subscribe(Arrays.asList(topic), new ConsumerRebalanceListener() &#123;</span><br><span class="line">            @Override</span><br><span class="line">            public void onPartitionsRevoked(Collection&lt;TopicPartition&gt; partitions) &#123;</span><br><span class="line">                &#x2F;** 提交位移 **&#x2F;</span><br><span class="line">                consumer.commitSync(offsets);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            @Override</span><br><span class="line">            public void onPartitionsAssigned(Collection&lt;TopicPartition&gt; partitions) &#123;</span><br><span class="line">                offsets.clear();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    &#x2F;** 消费主方法 **&#x2F;</span><br><span class="line">    public void consumer(int threadNumber)&#123;</span><br><span class="line">        executors &#x3D; new ThreadPoolExecutor(threadNumber,threadNumber,</span><br><span class="line">                0L, TimeUnit.MILLISECONDS,</span><br><span class="line">                new ArrayBlockingQueue&lt;&gt;(1000),</span><br><span class="line">                new ThreadPoolExecutor.CallerRunsPolicy());</span><br><span class="line">        try&#123;</span><br><span class="line">            while(true)&#123;</span><br><span class="line">                ConsumerRecords&lt;K,V&gt; records &#x3D; consumer.poll(1000L);</span><br><span class="line">                if(!records.isEmpty())&#123;</span><br><span class="line">                    executors.submit(new ConsumerWorker&lt;&gt;(records,offsets));</span><br><span class="line">                &#125;</span><br><span class="line">                commitOffsets();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;catch(WakeupException e)&#123;</span><br><span class="line">            &#x2F;** 异常处理 **&#x2F;</span><br><span class="line">        &#125;finally&#123;</span><br><span class="line">            commitOffsets();</span><br><span class="line">            consumer.close();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    private void commitOffsets()&#123;</span><br><span class="line">        &#x2F;** 尽量降低synchronized块对offsets锁定的时间 **&#x2F;</span><br><span class="line">        Map&lt;TopicPartition, OffsetAndMetadata&gt; unmodifedMap;</span><br><span class="line">        synchronized (offsets)&#123;</span><br><span class="line">            if(offsets.isEmpty())&#123;</span><br><span class="line">                return;</span><br><span class="line">            &#125;</span><br><span class="line">            unmodifedMap &#x3D; Collections.unmodifiableMap(new HashMap&lt;&gt;(offsets));</span><br><span class="line">            offsets.clear();</span><br><span class="line">        &#125;</span><br><span class="line">        consumer.commitSync(unmodifedMap);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public void close()&#123;</span><br><span class="line">        consumer.wakeup();</span><br><span class="line">        executors.shutdown();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">public class ConsumerWorker&lt;K,V&gt; implements Runnable &#123;</span><br><span class="line"></span><br><span class="line">    private final ConsumerRecords&lt;K,V&gt; records;</span><br><span class="line">    private final Map&lt;TopicPartition, OffsetAndMetadata&gt; offsets;</span><br><span class="line"></span><br><span class="line">    public ConsumerWorker(ConsumerRecords&lt;K, V&gt; record, Map&lt;TopicPartition, OffsetAndMetadata&gt; offsets)&#123;</span><br><span class="line">        this.records &#x3D; record;</span><br><span class="line">        this.offsets &#x3D; offsets;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void run() &#123;</span><br><span class="line">        for(TopicPartition partition : records.partitions())&#123;</span><br><span class="line">            List&lt;ConsumerRecord&lt;K,V&gt;&gt; partitionRecords &#x3D; records.records(partition);</span><br><span class="line">            for(ConsumerRecord&lt;K,V&gt; record : partitionRecords)&#123;</span><br><span class="line">                &#x2F;** 消息处理逻辑 **&#x2F;</span><br><span class="line">                System.out.println(String.format(&quot;topic&#x3D;%s,partition&#x3D;%d,offset&#x3D;%d&quot;,record.topic(), record.partition(),record.offset()));</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            &#x2F;** 上报位移信息 **&#x2F;</span><br><span class="line">            long lastOffset &#x3D; partitionRecords.get(partitionRecords.size()-1).offset();</span><br><span class="line">            synchronized (offsets)&#123;</span><br><span class="line">                if(offsets.containsKey(partition))&#123;</span><br><span class="line">                    offsets.put(partition,new OffsetAndMetadata(lastOffset+1));</span><br><span class="line">                &#125;else&#123;</span><br><span class="line">                    long curr &#x3D; offsets.get(partition).offset();</span><br><span class="line">                    if(curr &lt;&#x3D; lastOffset + 1)&#123;</span><br><span class="line">                        offsets.put(partition, new OffsetAndMetadata(lastOffset+1));</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">public class Main &#123;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        String brokerList &#x3D; &quot;localhost:9092&quot;;</span><br><span class="line">        String groupId &#x3D; &quot;testGroup1&quot;;</span><br><span class="line">        String topic &#x3D; &quot;test-topic&quot;;</span><br><span class="line">        final ConsumerThreadHandler&lt;byte[], byte[]&gt; handler &#x3D; new ConsumerThreadHandler&lt;&gt;(brokerList,groupId,topic);</span><br><span class="line">        final int cpuCount &#x3D; Runtime.getRuntime().availableProcessors();</span><br><span class="line"></span><br><span class="line">        Runnable runnable &#x3D; new Runnable()&#123;</span><br><span class="line">            @Override</span><br><span class="line">            public void run() &#123;</span><br><span class="line">                handler.consumer(cpuCount);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line">        new Thread(runnable).start();</span><br><span class="line"></span><br><span class="line">        try&#123;</span><br><span class="line">            &#x2F;** 20秒后自动停止该测试程序 **&#x2F;</span><br><span class="line">            Thread.sleep(20000L);</span><br><span class="line">        &#125;catch(InterruptedException e)&#123;</span><br><span class="line">            &#x2F;** 处理异常 **&#x2F;</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.println(&quot;starting to close the consumer.....&quot;);</span><br><span class="line">        handler.close();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>两种方式的对比:<br><img src="media/15668816337284/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202019-08-27%20%E4%B8%8B%E5%8D%884.21.47.png" alt="屏幕快照 2019-08-27 下午4.21.47"></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
   </section>
 
   
@@ -591,7 +594,7 @@
               
               <div class="site-state-item site-state-categories">
                 
-                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-count">2</span>
                   <span class="site-state-item-name">categories</span>
                 
               </div>
@@ -657,7 +660,7 @@
 
 
 
-  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
 
 
 
@@ -756,13 +759,6 @@
 
   
   
-
-
-  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
-
-  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
-
-
 
   
 
